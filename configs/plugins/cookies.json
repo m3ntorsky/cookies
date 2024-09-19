@@ -1,0 +1,6 @@
+{
+    "database" : {
+        "connection": "default_connection",
+        "tablename" : "sw_cookies"
+    }
+}
