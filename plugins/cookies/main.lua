@@ -57,6 +57,12 @@ AddEventHandler("OnClientConnect", function(event, playerid)
             Cookies[playerid] = json.decode(result[1].value)
         end
 
+        for _, cookie in ipairs(RegisteredCookies) do
+            if Cookies[playerid][cookie.name] == nil then
+                Cookies[playerid][cookie.name] = cookie.value
+            end
+        end
+        
         TriggerEvent("OnPlayerCookieLoaded", playerid)
     end)
 
@@ -93,3 +99,13 @@ AddEventHandler("OnClientDisconnect", function(event, playerid)
 
     return EventResult.Continue
 end)
+
+
+function GetDefaultCookieValue(cookie_name)
+    for _, cookie in ipairs(RegisteredCookies) do
+        if cookie.name == cookie_name then
+            return cookie.value
+        end
+    end
+    return nil
+end

@@ -45,9 +45,10 @@ The following exports are available:
 
 | Name                | Arguments                             | Description                                           |
 |---------------------|---------------------------------------|-------------------------------------------------------|
-| GetPlayerCookie     | playerid, cookie_name                        | Retrieves a player cookie by their playerid and cookie name |
+| RegisterCookie      | cookie_name, default_value            | Register cookie with default value                    |
+| GetPlayerCookie     | playerid, cookie_name                 | Retrieves a player cookie by their playerid and cookie name |
 | SetPlayerCookie     | playerid, cookie_name, cookie_value   | Sets a player's cookie                               |
-| HasPlayerCookie     | playerid, cookie_name                  | Checks if a player has a specific cookie            |
+| HasPlayerCookie     | playerid, cookie_name                 | Checks if a player has a specific cookie            |
 
 
 ### Example Usage ✍️
@@ -56,8 +57,19 @@ The following example code shows how to register a default cookie variable:
 
 ```lua
 AddEventHandler("OnPlayerCookieLoaded", function (event, playerid)
-    if not exports["cookies"]:HasPlayerCookie(playerid, "test") then
-        exports["cookies"]:SetPlayerCookie(playerid, "test", "variable")
+    if not exports["cookies"]:HasPlayerCookie(playerid, "cookie_name") then
+      exports["cookies"]:SetPlayerCookie(playerid, "cookie_name", "default_value")
+    end
+    return EventResult.Continue
+end)
+```
+
+or
+
+```lua
+AddEventHandler("OnAllPluginsLoaded", function (event, playerid)
+    if GetPluginState("cookies") == PluginState_t.Started then
+      exports["cookies"]:RegisterCookie("cookie_name","default_value")
     end
     return EventResult.Continue
 end)
