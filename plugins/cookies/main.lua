@@ -72,6 +72,7 @@ end)
 
 AddEventHandler("OnClientDisconnect", function(event, playerid)
     if not db:IsConnected() then return EventResult.Continue end
+    if not Cookies[playerid] then return end
 
     local player = GetPlayer(playerid)
     if not player or player:IsFakeClient() then return EventResult.Continue end
