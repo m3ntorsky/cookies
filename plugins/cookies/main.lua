@@ -10,22 +10,15 @@ AddEventHandler("OnPluginStart", function(event)
     db = Database(tostring(config:Fetch("cookies.database.connection")) or "default_connection")
     if not db:IsConnected() then return EventResult.Continue end
 
-    local createTableQuery = [[
-        CREATE TABLE IF NOT EXISTS @tablename (
-            steamid VARCHAR(30) PRIMARY KEY,
-            value JSON NOT NULL
-        )
-        CHARACTER SET utf8mb4 
-        COLLATE utf8mb4_unicode_ci;
-    ]]
-    local params = {
-        ["tablename"] = config:Fetch("cookies.database.tablename") or "sw_cookies" ,
-    }
-    db:QueryParams(createTableQuery, params, function(err, result)
+    db:QueryBuilder():Table(tostring(config:Fetch("cookies.database.tablename") or "sw_cookies")):Create({
+        steamid = "VARCHAR(30) PRIMARY KEY",
+        value = "JSON NOT NULL"
+    }):Execute(function (err, result)
         if #err > 0 then
             return print("{darkred} Error: {darkred}" .. err)
-        end
+        end        
     end)
+
     return EventResult.Continue
 end)
 
@@ -39,14 +32,7 @@ AddEventHandler("OnClientConnect", function(event, playerid)
     local steamid = player:GetSteamID()
     if not steamid then return EventResult.Continue end
 
-    local selectRowQuery = "SELECT * FROM @tablename WHERE steamid = @steamid LIMIT 1;"
-
-    local params = {
-        ["tablename"] = config:Fetch("cookies.database.tablename") or "sw_cookies",
-        ["steamid"] = steamid
-    }
-
-    db:QueryParams(selectRowQuery, params, function(err, result)
+    db:QueryBuilder():Table(tostring(config:Fetch("cookies.database.tablename") or "sw_cookies")):Select({'value'}):Where('steamid','=',steamid):Limit(1):Execute(function (err, result)
         if err and #err > 0 then
             return print("{darkred} Error: {darkred}" .. err)
         end
@@ -54,7 +40,7 @@ AddEventHandler("OnClientConnect", function(event, playerid)
         if #result == 0 then
             Cookies[playerid] = {}
         else
-            Cookies[playerid] = json.decode(result[1].value)
+            Cookies[playerid] = result[#result].value
         end
 
         for _, cookie in ipairs(RegisteredCookies) do
@@ -62,8 +48,7 @@ AddEventHandler("OnClientConnect", function(event, playerid)
                 Cookies[playerid][cookie.name] = cookie.value
             end
         end
-        
-        TriggerEvent("OnPlayerCookieLoaded", playerid)
+        TriggerEvent("OnPlayerCookieLoaded", playerid)        
     end)
 
     return EventResult.Continue
@@ -80,24 +65,18 @@ AddEventHandler("OnClientDisconnect", function(event, playerid)
     local steamid = player:GetSteamID()
     if not steamid then return EventResult.Continue end
 
-    local insertRowQuery = "INSERT INTO @tablename (steamid, value) VALUES ('@steamid', '@value') ON DUPLICATE KEY UPDATE value ='@value';"
+    local value = Cookies[playerid]
 
-    local params = {
-        ["tablename"] = config:Fetch("cookies.database.tablename") or "sw_cookies",
-        ["steamid"] = steamid,
-        ["value"] = json.encode(Cookies[playerid])
-    }
-
-    db:QueryParams(insertRowQuery, params, function(err, result)
+    db:QueryBuilder():Table(tostring(config:Fetch("cookies.database.tablename") or "sw_cookies")):Insert({
+        steamid = steamid,
+        value = value
+    }):OnDuplicate({value = value}):Execute(function (err, result)
         if err and #err > 0 then
             return print("{darkred} Error: {darkred}" .. err)
         end
+        Cookies[playerid] = nil
+        TriggerEvent("OnPlayerCookieUnloaded", playerid)
     end)
-
-    Cookies[playerid] = nil
-
-    TriggerEvent("OnPlayerCookieUnloaded", playerid)
-
     return EventResult.Continue
 end)
 
