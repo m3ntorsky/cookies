@@ -5,7 +5,7 @@ function GetPluginVersion()
     return "development"
 end
 function GetPluginName()
-    return "cookies"
+    return "Cookies"
 end
 function GetPluginWebsite()
     return "https://github.com/swiftly-solution/cookies"
