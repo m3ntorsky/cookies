@@ -40,7 +40,7 @@ AddEventHandler("OnClientConnect", function(event, playerid)
         if #result == 0 then
             Cookies[playerid] = {}
         else
-            Cookies[playerid] = result[#result].value
+            Cookies[playerid] = json.decode(result[#result].value)
         end
 
         for _, cookie in ipairs(RegisteredCookies) do
@@ -69,8 +69,8 @@ AddEventHandler("OnClientDisconnect", function(event, playerid)
 
     db:QueryBuilder():Table(tostring(config:Fetch("cookies.database.tablename") or "sw_cookies")):Insert({
         steamid = steamid,
-        value = value
-    }):OnDuplicate({value = value}):Execute(function (err, result)
+        value = json.encode(value)
+    }):OnDuplicate({value = json.encode(value)}):Execute(function (err, result)
         if err and #err > 0 then
             return print("{darkred} Error: {darkred}" .. err)
         end
