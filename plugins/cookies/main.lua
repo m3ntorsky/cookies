@@ -11,8 +11,8 @@ AddEventHandler("OnPluginStart", function(event)
     if not db:IsConnected() then return EventResult.Continue end
 
     db:QueryBuilder():Table(tostring(config:Fetch("cookies.database.tablename") or "sw_cookies")):Create({
-        steamid = "VARCHAR(30) PRIMARY KEY",
-        value = "JSON NOT NULL"
+        steamid = "string|max:30|primary",
+        value = "json"
     }):Execute(function (err, result)
         if #err > 0 then
             return print("{darkred} Error: {darkred}" .. err)
@@ -29,7 +29,7 @@ AddEventHandler("OnClientConnect", function(event, playerid)
     local player = GetPlayer(playerid)
     if not player or player:IsFakeClient() then return EventResult.Continue end
 
-    local steamid = player:GetSteamID()
+    local steamid = tostring(player:GetSteamID())
     if not steamid then return EventResult.Continue end
 
     db:QueryBuilder():Table(tostring(config:Fetch("cookies.database.tablename") or "sw_cookies")):Select({'value'}):Where('steamid','=',steamid):Limit(1):Execute(function (err, result)
@@ -62,7 +62,7 @@ AddEventHandler("OnClientDisconnect", function(event, playerid)
     local player = GetPlayer(playerid)
     if not player or player:IsFakeClient() then return EventResult.Continue end
 
-    local steamid = player:GetSteamID()
+    local steamid = tostring(player:GetSteamID())
     if not steamid then return EventResult.Continue end
 
     local value = Cookies[playerid]
