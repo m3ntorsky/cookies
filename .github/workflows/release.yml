@@ -14,7 +14,7 @@ jobs:
       - name: Setup Enviroment
         run: |
           echo "REPO_NAME=${GITHUB_REPOSITORY#$GITHUB_REPOSITORY_OWNER/}" >> $GITHUB_ENV
-          echo "VERSION_FILE=plugins/${REPO_NAME}/core.lua" >> $GITHUB_ENV
+          echo "VERSION_FILE=plugins/${GITHUB_REPOSITORY#$GITHUB_REPOSITORY_OWNER/}/core.lua" >> $GITHUB_ENV
 
       - name: Checkout code
         uses: actions/checkout@v3
