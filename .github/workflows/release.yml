@@ -11,7 +11,7 @@ jobs:
       contents: write 
 
     steps:
-      - name: Setup Enviroment
+      - name: Setup Environment
         run: |
           echo "REPO_NAME=${GITHUB_REPOSITORY#$GITHUB_REPOSITORY_OWNER/}" >> $GITHUB_ENV
           echo "VERSION_FILE=plugins/${GITHUB_REPOSITORY#$GITHUB_REPOSITORY_OWNER/}/core.lua" >> $GITHUB_ENV
@@ -78,41 +78,27 @@ jobs:
         id: get_last_tag
         if: env.TAG_EXISTS == 'false'
         run: |
-          # Fetch all tags
           git fetch --tags
-          # Find the last tag before the current tag
           LAST_TAG=$(git tag --sort=-creatordate | grep -B 1 "${GITHUB_REF##*/}" | head -n 1)
-          
-          # If LAST_TAG is equal to the current tag, it means no previous tag was found
           if [ "$LAST_TAG" = "${GITHUB_REF##*/}" ]; then
-            # Remove the current tag from the list
             LAST_TAG=$(git tag --sort=-creatordate | grep -v "${GITHUB_REF##*/}" | head -n 1)
           fi
-
           echo "Last tag before current tag: $LAST_TAG"
-          
-          # Save the last tag to an environment variable
           echo "LAST_TAG=$LAST_TAG" >> $GITHUB_ENV
 
       - name: Get commits from last tag to HEAD
         id: get_commits
         if: env.TAG_EXISTS == 'false'
         run: |
-          # Read the last tag from the environment variable
           LAST_TAG="${{ env.LAST_TAG }}"
           echo "Last tag: $LAST_TAG"
-
-          # Get commits from the last tag to HEAD
           if [ -z "$LAST_TAG" ]; then
-            # If LAST_TAG is empty, it means no previous tag was found
             COMMIT_MESSAGES=$(git log --pretty=format:"* [%h](https://github.com/${{ github.repository }}/commit/%H) - %s" || echo "No commits found")
           else
             COMMIT_MESSAGES=$(git log "${LAST_TAG}..HEAD" --pretty=format:"* [%h](https://github.com/${{ github.repository }}/commit/%H) - %s" || echo "No commits found")
           fi
           echo "Commits from last tag to HEAD:"
           echo "$COMMIT_MESSAGES"
-
-          # Save the commit messages to an environment variable
           echo "COMMITS=${COMMIT_MESSAGES}" >> $GITHUB_ENV
 
       - name: Create Release
@@ -122,8 +108,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
+          tag_name: ${{ env.PLUGIN_VERSION }}  # Use the tag name directly, without refs/tags/
+          release_name: ${{ env.PLUGIN_VERSION }}  # Use the tag name directly
           body: |
             Changes in this release:
             ${{ env.COMMITS }}
