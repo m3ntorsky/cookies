@@ -19,6 +19,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Fetch full history
+        run: git fetch --prune --unshallow --tags
+
       - name: Set up Git
         run: |
           git config user.name 'GitHub Actions'
@@ -59,9 +62,9 @@ jobs:
         id: get_commits
         if: env.TAG_EXISTS == 'false'
         run: |
-          LATEST_TAG=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null || echo "no_tag")
+          LATEST_TAG=$(git tag --sort=-creatordate | head -n 1)
 
-          if [[ "$LATEST_TAG" == "no_tag" ]]; then
+          if [[ -z "$LATEST_TAG" ]]; then
             COMMIT_MESSAGES="- Initial Release"
           else
             COMMIT_MESSAGES=$(git log $LATEST_TAG..HEAD --oneline | sed 's/^/- /')
