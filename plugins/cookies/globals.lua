@@ -1,2 +1,3 @@
 Cookies = {}
 RegisteredCookies = {}
+test  = "test"
