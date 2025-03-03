@@ -48,6 +48,13 @@ jobs:
             echo "TAG_EXISTS=false" >> $GITHUB_ENV
           fi
 
+      - name: Remove README and LICENSE files
+        id: remove_files
+        if: env.TAG_EXISTS == 'false'
+        run: |
+          echo "Removing README and LICENSE files"
+          rm -f README.md LICENSE
+
       - name: Get recent commit messages since last release
         id: get_commits
         if: env.TAG_EXISTS == 'false'
