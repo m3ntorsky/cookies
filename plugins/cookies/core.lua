@@ -2,7 +2,7 @@ function GetPluginAuthor()
     return "Swiftly Solution"
 end
 function GetPluginVersion()
-    return "2.0.1"
+    return "2.0.2"
 end
 function GetPluginName()
     return "Cookies"
